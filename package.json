@@ -1,0 +1,29 @@
+{
+	"name": "ji",
+	"version": "0.0.1",
+	"description": "为数字化的五（N）年日记创建更好的视图，以及一些实用的功能。",
+	"main": "dist/main.js",
+	"scripts": {
+		"dev": "node esbuild.config.mjs",
+		"test": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
+		"build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
+		"version": "node version-bump.mjs && git add manifest.json versions.json"
+	},
+	"keywords": [],
+	"author": "dms",
+	"devDependencies": {
+		"@types/node": "^16.11.6",
+		"@typescript-eslint/eslint-plugin": "5.29.0",
+		"@typescript-eslint/parser": "5.29.0",
+		"builtin-modules": "3.3.0",
+		"esbuild": "0.17.3",
+		"esbuild-plugin-less": "^1.3.20",
+		"obsidian": "latest",
+		"tslib": "2.4.0",
+		"typescript": "4.7.4"
+	},
+	"dependencies": {
+		"js-calendar-converter": "^0.0.6",
+		"less": "^4.2.1"
+	}
+}

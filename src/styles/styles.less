@@ -1,0 +1,411 @@
+/**
+ * @name: JI
+ * @author: 稻米鼠
+ * @description: A plugin for my daily notes.
+ * @created: 2024-11-26 09:28:10
+ * @updated: 2024-12-1 09:06:56
+ * @version: 1.0.0
+ */
+.ji-notepaper-view[data-element-mark="dms-ji-plugin"] {
+    --ji-base-gray: rgba(0, 0, 0, .1);
+    --ji-grid-gray: rgba(0, 0, 0, .06);
+    --ji-shadow-gray: rgba(0, 0, 0, .3);
+    --ji-link-color: #c54141;
+    --ji-content-color: #1f3f5e;
+    --ji-active-color: rgba(220, 103, 107, .6);
+    --ji-today-color: rgba(102, 201, 220, 0.6);
+
+    --ji-rainbow-color-1:  hsl(0,   66%, 88%);
+    --ji-rainbow-color-2:  hsl(30,  66%, 88%);
+    --ji-rainbow-color-3:  hsl(60,  66%, 88%);
+    --ji-rainbow-color-4:  hsl(90,  66%, 88%);
+    --ji-rainbow-color-5:  hsl(120, 66%, 88%);
+    --ji-rainbow-color-6:  hsl(150, 66%, 88%);
+    --ji-rainbow-color-7:  hsl(180, 66%, 88%);
+    --ji-rainbow-color-8:  hsl(210, 66%, 88%);
+    --ji-rainbow-color-9:  hsl(240, 66%, 88%);
+    --ji-rainbow-color-10: hsl(270, 66%, 88%);
+    --ji-rainbow-color-11: hsl(300, 66%, 88%);
+    --ji-rainbow-color-12: hsl(330, 66%, 88%);
+
+    --ji-rainbow-mark-1:  hsl(0,   66%, 66%);
+    --ji-rainbow-mark-2:  hsl(30,  66%, 66%);
+    --ji-rainbow-mark-3:  hsl(60,  66%, 66%);
+    --ji-rainbow-mark-4:  hsl(90,  66%, 66%);
+    --ji-rainbow-mark-5:  hsl(120, 66%, 66%);
+    --ji-rainbow-mark-6:  hsl(150, 66%, 66%);
+    --ji-rainbow-mark-7:  hsl(180, 66%, 66%);
+    --ji-rainbow-mark-8:  hsl(210, 66%, 66%);
+    --ji-rainbow-mark-9:  hsl(240, 66%, 66%);
+    --ji-rainbow-mark-10: hsl(270, 66%, 66%);
+    --ji-rainbow-mark-11: hsl(300, 66%, 66%);
+    --ji-rainbow-mark-12: hsl(330, 66%, 66%);
+
+    --ji-rainbow-alpha-1:  hsla(0,   66%, 88%, .6);
+    --ji-rainbow-alpha-2:  hsla(30,  66%, 88%, .6);
+    --ji-rainbow-alpha-3:  hsla(60,  66%, 88%, .6);
+    --ji-rainbow-alpha-4:  hsla(90,  66%, 88%, .6);
+    --ji-rainbow-alpha-5:  hsla(120, 66%, 88%, .6);
+    --ji-rainbow-alpha-6:  hsla(150, 66%, 88%, .6);
+    --ji-rainbow-alpha-7:  hsla(180, 66%, 88%, .6);
+    --ji-rainbow-alpha-8:  hsla(210, 66%, 88%, .6);
+    --ji-rainbow-alpha-9:  hsla(240, 66%, 88%, .6);
+    --ji-rainbow-alpha-10: hsla(270, 66%, 88%, .6);
+    --ji-rainbow-alpha-11: hsla(300, 66%, 88%, .6);
+    --ji-rainbow-alpha-12: hsla(330, 66%, 88%, .6);
+}
+
+/** 日记视图样式 */
+.ji-notepaper-view[data-element-mark="dms-ji-plugin"] {
+    display: flex;
+    flex-wrap: nowrap;
+    width: 100%;
+    max-width: var(--line-width);
+    padding: 1rem 0;
+    margin: 0 auto;
+    /** 工具类 */
+    & a {
+        color: var(--ji-link-color);
+        text-decoration: none;
+        &:hover {
+            text-decoration: none;
+        }
+    }
+    & .ji-note-subtitle {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        padding:.2rem 1rem .2rem .2rem;
+        background-image: repeating-linear-gradient(
+            -45deg,
+            var(--ji-base-gray),
+            var(--ji-base-gray) 1px,
+            transparent 1px,
+            transparent 2px);
+        & > .ji-daily-link {
+            color: #48484C;
+            font-weight: bold;
+        }
+        & > .ji-week-link {
+            float: right;
+            color: #a55e2e;
+        }
+    }
+    & .ji-note-content {
+        color: var(--ji-content-color);
+        & p > code,
+        & li > code {
+            display: inline;
+        }
+    }
+    /** 主容器，纸张 */
+    & > .ji-notepaper-main {
+        position: relative;
+        display: flex;
+        flex-grow: 1;
+        padding: 1rem 0;
+        background-image:
+            linear-gradient(to right, var(--ji-grid-gray) 1px, transparent 1px),
+            linear-gradient(to bottom, var(--ji-grid-gray) 1px, transparent 1px);
+        background-position: center center;
+        background-size: calc(1em * var(--line-height)) calc(1em * var(--line-height));
+        &,
+        &::before,
+        &::after {
+            border: 1px solid var(--ji-base-gray);
+            border-radius: 1rem;
+            background-color: #f6f6f6;
+            box-shadow: 0 0 1rem var(--ji-base-gray);
+        }
+        &::before,
+        &::after {
+            position: absolute;
+            z-index: -10;
+            top: 0;
+            right: -10px;
+            width: 100%;
+            height: 100%;
+            content: '';
+        }
+        &::after {
+            right: -5px;
+        }
+    }
+    /** 纸张内部左侧 */
+    & .ji-notepaper-left {
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+        & > * {
+            margin: 0 0 0 1.6rem;
+        }
+        & .ji-notepaper-top-tools,
+        & .ji-notepaper-bottom-tools {
+            display: flex;
+            justify-content: flex-end;
+            height: 1.6rem;
+            opacity: .3;
+            & > * {
+                margin-left: 1rem;
+                cursor: pointer;
+            }
+        }
+        & .ji-notepaper-top-tools {
+            border-bottom: 4px solid var(--ji-shadow-gray);
+        }
+        & .ji-notepaper-bottom-tools {
+            border-top: 4px solid var(--ji-shadow-gray);
+        }
+        & .ji-notepaper-content {
+            flex-grow: 1;
+        }
+        & .ji-daily-content {
+            display: -webkit-box;
+            overflow: hidden;
+            margin: .5rem;
+            text-overflow: ellipsis;
+            -webkit-box-orient: vertical;
+            & > * {
+                margin-top: .2rem;
+                margin-bottom: .2rem;
+            }
+        }
+    }
+    /** 纸张内部右侧（纸边选择器） */
+    & .ji-notepaper-inpaper-selectors {
+        flex-grow: 0;
+        & > div {
+            padding: 0 1rem;
+            opacity: .3;
+            cursor: pointer;
+            &.active {
+                position: relative;
+                opacity: 1;
+                &::before {
+                    position: absolute;
+                    top: 0;
+                    right: 0;
+                    content: '<';
+                }
+            }
+        }
+    }
+    /** 纸张外部右侧（索引幅选择器） */
+    & .ji-notepaper-outpaper-selectors {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        flex-grow: 0;
+        padding: 1.5rem 0;
+        margin-left: 4px;
+        & > div {
+            overflow: hidden;
+            box-sizing: content-box;
+            width: 1.2rem;
+            padding: .5rem .5rem .5rem .1rem;
+            margin-top: -.3rem;
+            border: 1px solid var(--ji-base-gray);
+            border-left: none;
+            border-radius: 0 6px 6px 0;
+            background: #f6f6f6;
+            box-shadow: .5rem 0 .5rem var(--ji-shadow-gray);
+            cursor: pointer;
+            text-align: center;
+            text-orientation: upright;
+            writing-mode: vertical-lr;
+            word-break: break-all;
+            &:nth-child(1)  { background: var(--ji-rainbow-color-1); }
+            &:nth-child(2)  { background: var(--ji-rainbow-color-2); }
+            &:nth-child(3)  { background: var(--ji-rainbow-color-3); }
+            &:nth-child(4)  { background: var(--ji-rainbow-color-4); }
+            &:nth-child(5)  { background: var(--ji-rainbow-color-5); }
+            &:nth-child(6)  { background: var(--ji-rainbow-color-6); }
+            &:nth-child(7)  { background: var(--ji-rainbow-color-7); }
+            &:nth-child(8)  { background: var(--ji-rainbow-color-8); }
+            &:nth-child(9)  { background: var(--ji-rainbow-color-9); }
+            &:nth-child(10) { background: var(--ji-rainbow-color-10); }
+            &:nth-child(11) { background: var(--ji-rainbow-color-11); }
+            &:nth-child(12) { background: var(--ji-rainbow-color-12); }
+            &.active {
+                padding-left: .7rem;
+            }
+        }
+    }
+}
+.ji-notepaper-view[data-element-mark="dms-ji-plugin"].ji--view .ji-notepaper-outpaper-selectors > div {
+    letter-spacing: .5rem;
+}
+/** 周记视图样式 */
+.ji-notepaper-view[data-element-mark="dms-ji-plugin"].ji-weekly-view {
+    & .ji-notepaper-left {
+        & .ji-notepaper-content {
+            overflow: hidden;
+            transition: all .5s ease;
+        }
+        & .ji-notepaper-weekly-content {
+            overflow: hidden;
+            height: 0;
+            transition: all .5s ease;
+        }
+    }
+    & .ji-weekly-note-view {
+        & .ji-notepaper-content {
+            flex-grow: 0;
+            height: 0;
+        }
+        & .ji-notepaper-weekly-content {
+            flex-grow: 1;
+            height: auto;
+        }
+    }
+}
+
+.ji-notepaper-view[data-element-mark="dms-ji-plugin"].ji-year-view {
+    & .ji-notepaper-left {
+        & > * {
+            margin: 0 1.6rem;
+        }
+        & .ji-notepaper-content {
+            position: relative;
+            display: block;
+            padding: 0 1rem;
+            margin: 0;
+            margin-left: 1rem;
+            text-align: justify;
+        }
+        & .ji-year-month-title-odd,
+        & .ji-year-month-odd {
+            background: var(--ji-grid-gray);
+        }
+        & .ji-year-month-title {
+            position: absolute;
+            left: -1rem;
+            border-radius: .3rem;
+            transform: rotate(180deg);
+            text-orientation: sideways;
+            writing-mode: vertical-lr;
+            font-size: .8rem;
+        }
+        & .ji-year-month-title[data-month-value="01"] { top: 0; }
+        & .ji-year-month-title[data-month-value="02"] { top: 8.333%; }
+        & .ji-year-month-title[data-month-value="03"] { top: 16.666%; }
+        & .ji-year-month-title[data-month-value="04"] { top: 25%; }
+        & .ji-year-month-title[data-month-value="05"] { top: 33.333%; }
+        & .ji-year-month-title[data-month-value="06"] { top: 41.666%; }
+        & .ji-year-month-title[data-month-value="07"] { top: 50%; }
+        & .ji-year-month-title[data-month-value="08"] { top: 58.333%; }
+        & .ji-year-month-title[data-month-value="09"] { top: 66.666%; }
+        & .ji-year-month-title[data-month-value="10"] { top: 75%; }
+        & .ji-year-month-title[data-month-value="11"] { top: 83.333%; }
+        & .ji-year-month-title[data-month-value="12"] { top: 91.666%; }
+        & .ji-year-week {
+            display: inline;
+            &:hover > .ji-year-day {
+                opacity: .4;
+                color: #FCFCFF;
+                background-color: var(--ji-active-color);
+                font-weight: bold;
+            }
+            & > .ji-year-day:hover {
+                opacity: 1;
+            }
+        }
+        & .ji-year-item {
+            display: inline-block;
+            align-items: center;
+            line-height: 1em;
+            box-sizing: border-box;
+            padding: .5rem;
+        }
+        & .ji-year-day {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 2rem;
+            padding: .5rem 0;
+            cursor: crosshair;
+            text-align: center;
+        }
+        & .ji-year-day-marks {
+            position: absolute;
+            bottom: 2px;
+            left: 10%;
+            display: flex;
+            width: 80%;
+            & > .ji-year-day-mark {
+                flex-grow: 1;
+                flex-shrink: 1;
+                min-width: 4px;
+                height: 2px;
+                &:first-child {
+                    margin-left: .3rem;
+                    border-top-left-radius: 1px;
+                    border-bottom-left-radius: 1px;
+                }
+                &:last-child {
+                    margin-right: .3rem;
+                    border-top-right-radius: 1px;
+                    border-bottom-right-radius: 1px;
+                }
+            }
+            & > .ji-year-day-monthStart    { background-color: var(--ji-rainbow-mark-8); }
+            & > .ji-year-day-cMonthStart   { background-color: var(--ji-rainbow-mark-4); }
+            & > .ji-year-day-weekStart     { background-color: var(--ji-rainbow-mark-11); }
+            & > .ji-year-day-term          { background-color: var(--ji-rainbow-mark-7); }
+            & > .ji-year-day-festival      { background-color: var(--ji-rainbow-mark-1); }
+            & > .ji-year-day-lunarFestival { background-color: var(--ji-rainbow-mark-2); }
+        }
+        & .ji-year-day-active {
+            &::after {
+                position: absolute;
+                top: 0;
+                left: 0;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 100%;
+                height: 100%;
+                color: #FCFCFF;
+                background-color: var(--ji-today-color);
+                content: attr(data-day-value);
+                font-weight: bold;
+            }
+        }
+        & .ji-year-month-passed,
+        & .ji-year-day-passed {
+            opacity: .4;
+        }
+    }
+    .ji-notepaper-outpaper-selectors > div  {
+        padding: 1rem .5rem 1rem .1rem;
+        text-orientation: sideways;
+    }
+}
+
+/** 在小屏幕下消除容器两侧内部，扩大显示面积
+ * 工具类：.mobile-wide-view
+ * Note: 容器查询似乎只能对其内部元素起作用
+*/
+.markdown-reading-view {
+    /* 定义容器名称，用来媒体查询 */
+    container-type: inline-size;
+    container-name: daily-reading-container;
+    @container daily-reading-container (max-width: 48rem) {
+        .markdown-preview-view.mobile-wide-view {
+            padding-right: 0;
+            padding-left: 0;
+        }
+    }
+}
+.view-content > .markdown-source-view.mobile-wide-view.mod-cm6 > .cm-editor {
+    /* 定义容器名称，用来媒体查询 */
+    container-type: inline-size;
+    container-name: daily-editor-container;
+    @container daily-editor-container (max-width: 48rem) {
+        .cm-scroller {
+            padding-right: 0;
+            padding-left: 0;
+        }
+    }
+}

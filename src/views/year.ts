@@ -1,0 +1,206 @@
+import { MarkdownPostProcessorContext, setTooltip } from "obsidian";
+import JIPlugin from "../main";
+import type { Moment } from 'moment';
+import calendar from "../utils/js-calendar-converter.mjs"
+import { NotePagerConfig, NotePager } from "../utils/notepaper";
+
+export class YearView {
+    // 当前年份
+    year: string = window.moment().format('YYYY');
+    // 视图容器
+    container: HTMLElement;
+    paper: NotePager;
+    // 插件对象
+    plugin: JIPlugin;
+    // 今天
+    today: Moment = window.moment();
+    // 周容器
+    weekContainer: HTMLElement|null = null;
+    constructor(el: HTMLElement, plugin: JIPlugin) {
+        this.container = el;
+        this.plugin = plugin;
+        el.empty();
+        /** 中创建视图 */
+        this.initPaper();
+        /** 添加点击事件 */
+        this.initEvents();
+        /** 初始化 */
+        this.update();
+    }
+    private initPaper() {
+       this.paper = new NotePager(this.container, {
+           clsName: ['ji-year-view']
+       })
+    }
+    /**
+     * 初始化事件监听
+     * 为年份视图添加点击事件处理
+     */
+    private initEvents() {
+        this.plugin.registerDomEvent(this.paper.els.view, 'click', (e:MouseEvent) => {
+            const target = e.target as HTMLElement
+            // 点击年份选项时，更新当前选中的年份
+            if (target.classList.contains('year-option')) {
+                this.setYear(target.dataset.value!)
+            }
+            // 点击日期时，显示该日期的详细信息
+            if (target.classList.contains('ji-year-day')) {
+                this.setToolTips(target.dataset.dayInfo!)
+            }
+        })
+    }
+    /**
+     * 设置工具提示信息
+     * @param info - 要显示的提示信息
+     */
+    private setToolTips(info: string) {
+        // 更新顶部工具栏的文本内容
+        this.paper.els.topTools!.textContent = info;
+        // 更新底部工具栏的文本内容
+        this.paper.els.bottomTools!.textContent = info;
+    }
+    private setYear(year: string) {
+        this.year = year;
+        this.update();
+    }
+    /** 刷新日期选择器 */
+    private refreshDateSelector = () => {
+        const thisYear = new Date().getFullYear();
+        const startYear = Math.min(new Date(this.plugin.settings.dailyStartDate).getFullYear(), thisYear-5);
+        const endYear = Math.max(startYear+10, thisYear);
+        let yearSelectorsCode = ''
+        for (let year = startYear; year <= endYear; year++) {
+            yearSelectorsCode += `
+                <div class="year-option${+this.year === year ? ' active' : ''}" data-value="${year}">${year}</div>
+            `
+        }
+        this.paper.els.outpaper!.innerHTML = yearSelectorsCode;
+    }
+    private async update() {
+        this.refreshDateSelector();
+        await this.render();
+    }
+    /**
+     * 渲染年份视图
+     * 创建包含所有月份和日期的年历视图
+     */
+    private async render() {
+        // 获取并清空笔记容器
+        const notesContainer = this.container.querySelector('.ji-notepaper-content')!;
+        notesContainer.empty();
+        // 创建文档片段用于批量添加元素
+        const content = document.createDocumentFragment();
+        // 遍历12个月
+        for (let i = 0; i < 12; i++) {
+            const thisMonth = String(i+1).padStart(2, '0');
+            // 遍历当月的每一天
+            for (let j = 1; j <= window.moment(`${this.year}-${thisMonth}-01`).daysInMonth(); j++) {
+                this.renderDay(thisMonth, j, content);
+            }
+        }
+        // 将所有内容添加到容器中
+        notesContainer.appendChild(content);
+    }
+    private async renderDay(month:string, day:number, content: DocumentFragment) {
+        const thisDate = String(day).padStart(2, '0');
+        const thisDay = window.moment(`${this.year}-${month}-${thisDate}`)
+
+        // 在每周开始时创建新的周容器
+        if(!this.weekContainer || thisDay.day() === 0) {
+            this.weekContainer = content.createEl('div', { cls: 'ji-year-week' });
+            this.weekContainer.dataset.weekIndex = `${thisDay.weekYear()}Week${thisDay.week().toString()}`;
+        }
+
+        // 处理月份标题
+        const isOddMonth = (+month % 2);
+        if(day===1) {
+            const monthClasses = ["ji-year-item", "ji-year-month-title"];
+            /** 奇数月 */
+            if (isOddMonth) monthClasses.push("ji-year-month-title-odd");
+            /** 过去 */
+            if(thisDay.format('YYYY-MM') < this.today.format('YYYY-MM')) monthClasses.push("ji-year-month-passed");
+            this.weekContainer.createEl('div', {
+                text: window.moment(`${this.year}-${month}`).format('MMMM'),
+                cls: monthClasses.join(" "),
+                attr: { 'data-month-value': `${month}` }
+            });
+        }
+
+        // 设置日期单元格的样式类
+        const dayClasses = ["ji-year-item", "ji-year-day"];
+        /** 奇数月 */
+        if (isOddMonth) dayClasses.push("ji-year-month-odd");
+        /** 今天 */
+        if (thisDay.format('YYYY-MM-DD') === this.today.format('YYYY-MM-DD')) dayClasses.push("ji-year-day-active");
+        /** 过去 */
+        if (this.today.diff(thisDay, 'days') > 0) dayClasses.push("ji-year-day-passed");
+        /** 日期信息
+         * {
+         *   Animal: "龙",
+         *   IDayCn: "廿一",
+         *   IMonthCn: "冬月",
+         *   Term: "冬至",
+         *   astro: "射手座",
+         *   cDay: 21,
+         *   cMonth: 12,
+         *   cYear: 2024,
+         *   date: "2024-12-21",
+         *   festival: null,
+         *   gzDay: "己未",
+         *   gzMonth: "丙子",
+         *   gzYear: "甲辰",
+         *   isLeap: false,
+         *   isTerm: true,
+         *   isToday: false,
+         *   lDay: 21,
+         *   lMonth: 11,
+         *   lYear: 2024,
+         *   lunarDate: "2024-11-21",
+         *   lunarFestival: null,
+         *   nWeek: 6,
+         *   ncWeek: "星期六",
+         * }
+        */
+        // 获取农历信息并生成日期信息代码
+        const dayInfo = calendar.solar2lunar(this.year, month, thisDate);
+        const dayInfoCode = `${month}-${thisDate} ` + (dayInfo!==-1 ? `${dayInfo.festival ? `${dayInfo.festival} ` : ''}${dayInfo.IMonthCn}${dayInfo.IDayCn}${dayInfo.lunarFestival ? ` ${dayInfo.lunarFestival}` : ''}${dayInfo.Term ? ` ${dayInfo.Term}` : ''}` : '') + ` 第${thisDay.week().toString()}周`
+
+        // 创建日期单元格
+        const thisDayContent = this.weekContainer.createEl("div", {
+            text: thisDate,
+            cls: dayClasses.join(" "),
+            attr: {
+                "data-month-value": `${month}`,
+                "data-day-value": `${thisDate}`,
+                "data-day-info": dayInfoCode,
+            },
+        });
+        const marks =thisDayContent.createEl("div", { cls: "ji-year-day-marks" });
+        /** 是月初 */
+        if(thisDay.date()===1) marks.createEl("div", { cls: "ji-year-day-mark ji-year-day-monthStart" });
+        /** 是农历月初 */
+        if(dayInfo !== -1 && dayInfo.lDay === 1) marks.createEl("div", { cls: "ji-year-day-mark ji-year-day-cMonthStart" });
+        /** 是周一 */
+        // if(!thisDay.day()) marks.createEl("div", { cls: "ji-year-day-mark ji-year-day-weekStart" });
+        /** 是节气 */
+        if(dayInfo !== -1 && dayInfo.isTerm) marks.createEl("div", { cls: "ji-year-day-mark ji-year-day-term" });
+        /** 是公历节日 */
+        if(dayInfo !== -1 && dayInfo.festival) marks.createEl("div", { cls: "ji-year-day-mark ji-year-day-festival" });
+        /** 是农历节日 */
+        if(dayInfo !== -1 && dayInfo.lunarFestival) marks.createEl("div", { cls: "ji-year-day-mark ji-year-day-lunarFestival" });
+
+        // 设置工具提示
+        const Tooltip =
+            `${thisDay.format("YYYY-MM-DD")}\n第 ${thisDay.week().toString()} 周 ${thisDay.format("dddd")}` +
+            (dayInfo !== -1
+                ? `\n${dayInfo.IMonthCn} ${dayInfo.IDayCn}${
+                        dayInfo.Term ? `\n${dayInfo.Term}` : ""
+                    }${
+                        dayInfo.festival ? `\n${dayInfo.festival}` : ""
+                    }${
+                        dayInfo.lunarFestival ? `\n${dayInfo.lunarFestival}` : ""
+                    }`
+                : "");
+        setTooltip(thisDayContent, Tooltip);
+    }
+}
