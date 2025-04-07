@@ -1,7 +1,7 @@
 {
 	"id": "ji",
 	"name": "JI",
-	"version": "0.0.1",
+	"version": "0.1.0",
 	"minAppVersion": "0.15.0",
 	"description": "为数字化的五（N）年日记创建更好的视图，以及一些实用的功能。",
 	"author": "dms",
