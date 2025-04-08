@@ -16,6 +16,21 @@ JI|己-记-纪
 - 然后将下载的内容解压到这个文件夹中
 - 重启 Obsidian，然后启用该插件，就可以开始使用了
 
+## 效果预览
+
+### 日记视图
+
+<a href="./assets/ji-daily.png" title="点击查看原图" target="_blank"><img src="./assets/ji-daily.png" height="480" alt="日记视图" /></a>
+
+### 周记视图
+
+<a href="./assets/ji-weekly-1.png" title="点击查看原图" target="_blank"><img src="./assets/ji-weekly-1.png" height="480" alt="周记视图" /></a>
+
+<a href="./assets/ji-weekly-2.png" title="点击查看原图" target="_blank"><img src="./assets/ji-weekly-2.png" height="480" alt="周记视图" /></a>
+
+### 年历视图
+<a href="./assets/ji-year.png" title="点击查看原图" target="_blank"><img src="./assets/ji-year.png" height="480" alt="年历视图" /></a>
+
 ## 前置信息（我的笔记格式）
 
 ### 关于日记
