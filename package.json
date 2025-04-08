@@ -1,13 +1,13 @@
 {
 	"name": "ji",
-	"version": "0.1.6",
+	"version": "0.1.8",
 	"description": "为数字化的五（N）年日记创建更好的视图，以及一些实用的功能。",
 	"main": "dist/main.js",
 	"scripts": {
 		"dev": "node esbuild.config.mjs",
 		"test": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
 		"build": "lessc src/styles/styles.less dist/styles.css && tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
-		"version": "node version-bump.mjs && git add manifest.json versions.json"
+		"version": "node version-bump.mjs && git add * && git commit -m \"JI v$npm_package_version\" && git tag $npm_package_version && git push && git push --tags"
 	},
 	"keywords": [],
 	"author": "dms",
