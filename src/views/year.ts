@@ -42,6 +42,7 @@ export class YearView {
             // 点击年份选项时，更新当前选中的年份
             if (target.classList.contains('year-option')) {
                 this.setYear(target.dataset.value!)
+                this.update();
             }
             // 点击日期时，显示该日期的详细信息
             if (target.classList.contains('ji-year-day')) {
@@ -68,13 +69,16 @@ export class YearView {
         const thisYear = new Date().getFullYear();
         const startYear = Math.min(new Date(this.plugin.settings.dailyStartDate).getFullYear(), thisYear-5);
         const endYear = Math.max(startYear+10, thisYear);
-        let yearSelectorsCode = ''
+        this.paper.els.outpaper!.empty();
         for (let year = startYear; year <= endYear; year++) {
-            yearSelectorsCode += `
-                <div class="year-option${+this.year === year ? ' active' : ''}" data-value="${year}">${year}</div>
-            `
+            this.paper.els.outpaper!.createEl('div', {
+                text: year.toString(),
+                cls: `year-option${+this.year === year ? ' active' : ''}`,
+                attr: {
+                    'data-value': year.toString()
+                }
+            })
         }
-        this.paper.els.outpaper!.innerHTML = yearSelectorsCode;
     }
     private async update() {
         this.refreshDateSelector();

@@ -66,6 +66,7 @@ const sync = () => {
 	const target = 'F:/Obsidian/.obsidian/plugins/obsidian-ji'
 	const fileList = [
 		'dist/main.js',
+		'dist/styles.css',
 		'manifest.json',
 	]
   /** 如果目标文件夹不存在 */

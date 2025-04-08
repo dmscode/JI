@@ -110,55 +110,34 @@ export class DailyView {
         this.day = day;
         this.update();
     }
-
-    /**
-     * 生成日期选择器的选项HTML
-     * @param option - 选项配置对象
-     * @param option.type - 选择器类型，可选值：'month' | 'day'
-     * @param option.value - 选项值
-     * @param option.title - 选项显示文本
-     * @param option.active - 是否为激活状态
-     * @returns 返回选项的HTML字符串
-     */
-    private getSelectorOption (option: {
-        type: 'month' | 'day',
-        value: string,
-        title: string,
-        active?: boolean,
-    }) {
-        // 返回带有类名、数据属性和激活状态的选项div元素
-        return `
-            <div class="${option.type}-option${option.active?' active':''}" data-value="${option.value}">${option.title}</div>
-        `
-    }
     /** 更新日期选择器的显示状态 */
     private refreshDateSelector () {
         const months = ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一', '十二']
-        // 生成月份选择器HTML
-        const monthSelectorsCode = Array.from({ length: 12 }, (_, i) => {
-            return this.getSelectorOption({
-                type: 'month',
-                value: String(i),
-                title: months[i],
-                active: this.month === i
-            });
-        }).join('');
-        
-        // 生成日期选择器HTML
-        const monthDayCount = [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
-        const daySelectorsCode = Array.from({ length: monthDayCount[this.month] }, (_, i) => {
-            const day = (i + 1).toString().padStart(2, '0');
-            return this.getSelectorOption({
-                type:'day',
-                value: day,
-                title: day,
-                active: this.day === (i + 1)
+        // 生成月份选择器
+        this.paper.els.outpaper!.empty();
+        for (let i = 0; i < 12; i++) {
+            this.paper.els.outpaper!.createEl('div', {
+                cls: `month-option${this.month === i?' active':''}`,
+                text: months[i],
+                attr: {
+                    'data-value': String(i),
+                }
             })
-        }).join('');
-
-        // 更新选择器显示
-        this.paper.els.outpaper!.innerHTML = monthSelectorsCode;
-        this.paper.els.inpaper!.innerHTML = daySelectorsCode;
+        }
+        
+        // 生成日期选择器
+        this.paper.els.inpaper!.empty();
+        const monthDayCount = [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+        for (let i = 0; i < monthDayCount[this.month]; i++) {
+            const day = (i + 1).toString().padStart(2, '0');
+            this.paper.els.inpaper!.createEl('div', {
+                cls: `day-option${this.day === (i + 1)?' active':''}`,
+                text: day,
+                attr: {
+                    'data-value': day,
+                }
+            }) 
+        }
     }
 
     /** 更新视图内容 */
@@ -187,12 +166,28 @@ export class DailyView {
         }
         this.noteSource = ''
     }
-    private getWeekNoteCode (dateStr: string|undefined) {
+    private getWeekNoteCode (dateStr: string|undefined, container: HTMLElement) {
         const dateMoment = dateStr && window.moment(dateStr, 'YYYY-MM-DD');
         const weekNotePath = dateStr && this.plugin.settings.weekNotePath.replace(/\$\{\{(.*?)\}\}/g, (m, s)=> dateMoment!.format(s));
         const hasWeekNote = weekNotePath && this.plugin.app.vault.getAbstractFileByPath(weekNotePath);
         const weekTitle = dateMoment ? `${dateMoment!.format('YYYY')} Week ${dateMoment!.format('ww')}` : '';
-        return hasWeekNote ? `<a href="${weekNotePath}" data-path="${weekNotePath}" class="internal-link ji-week-link" target="_blank" rel="noopener">${weekTitle}</a>` : `<span class="ji-week-link">${weekTitle}</span>`;
+        if(hasWeekNote) {
+            container.createEl('a', {
+                cls: 'internal-link ji-week-link',
+                text: weekTitle,
+                href: weekNotePath,
+                attr: {
+                    'data-path': weekNotePath,
+                    'target': '_blank',
+                    'rel': 'noopener',
+                }
+            })
+        } else {
+            container.createEl('span', {
+                cls: 'ji-week-link',
+                text: weekTitle,
+            })
+        }
     }
     /** 渲染笔记内容 */
     private async render() {
@@ -202,32 +197,47 @@ export class DailyView {
         
         // 处理空内容情况
         if(!dailyContentGroup.length) {
-            notesContainer.innerHTML = '（此日记无内容）'
+            notesContainer.textContent = '（此日记无内容）'
             return
         }
 
         // 清空并重新渲染内容
-        notesContainer.innerHTML = ''
+        notesContainer.empty();
         dailyContentGroup.forEach(async dayNote => {
             // 提取笔记信息
             const title = dayNote[1]
             const content = dayNote[2]
             const dateStr = title.match(/^(\d{4}-\d{2}-\d{2})\s+/)?.[1]
 
-            // 处理周记链接
-            const weekLinkCode = this.getWeekNoteCode(dateStr);
-            // 渲染笔记HTML结构
-            notesContainer.innerHTML += `
-                <div class="ji-daily-note">
-                    <div class="ji-note-subtitle ji-daily-title">
-                        <a href="${this.notePath}#${title}" data-path="${this.notePath}#${title}" class="internal-link ji-daily-link" target="_blank" rel="noopener">${title}</a>
-                        ${weekLinkCode}
-                    </div>
-                    <div class="ji-note-content ji-daily-content" data-title="${title}" ${this.isFolding ? `style="line-clamp: ${this.plugin.settings.dailyContentLineCount}; -webkit-line-clamp: ${this.plugin.settings.dailyContentLineCount};"` : ''}></div>
-                </div>
-            `
+            // 渲染笔记容器
+            const dailyContainer = notesContainer.createEl('div', {
+                cls: 'ji-daily-note',
+            })
+            // 渲染笔记标题容器
+            const dailyTitleContainer = dailyContainer.createEl('div', {
+                cls: 'ji-note-subtitle ji-daily-title',
+            })
+            dailyTitleContainer.createEl('a', {
+                cls: 'ji-daily-link',
+                text: title,
+                href: `${this.notePath}#${title}`,
+                attr: {
+                    'target': '_blank',
+                    'rel': 'noopener',
+                }
+            })
+            // 渲染周链接
+            this.getWeekNoteCode(dateStr, dailyTitleContainer)
+            // 渲染笔记内容容器
+            const dailyContentContainer = dailyContainer.createEl('div', {
+                cls: 'ji-note-content ji-daily-content',
+                attr: {
+                    'data-title': title,
+                    'style': this.isFolding? `line-clamp: ${this.plugin.settings.dailyContentLineCount}; -webkit-line-clamp: ${this.plugin.settings.dailyContentLineCount};` : ''
+                } 
+            })
             // 渲染Markdown内容
-            await MarkdownRenderer.render(this.plugin.app, content, notesContainer.querySelector(`.ji-daily-content[data-title="${title}"]`)!, "", this.plugin);
+            await MarkdownRenderer.render(this.plugin.app, content, dailyContentContainer, "", this.plugin);
         })
     }
 }

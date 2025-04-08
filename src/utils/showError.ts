@@ -7,11 +7,8 @@
 export function showError(container: HTMLElement, msg: string, level: 'info' | 'warning' | 'error') {
     // 创建新的div元素用于显示消息
     const errorEl = document.createElement('div');
-    // 根据消息级别设置对应的颜色
-    const color = level === 'info' ? 'green' : level === 'warning' ? 'orange' : 'red';
     // 设置消息内容和颜色样式
-    errorEl.textContent = msg;
-    errorEl.style.color = color;
+    errorEl.textContent = `【${level}】： ${msg}`;
     // 将消息元素添加到容器中
     container.appendChild(errorEl);
 }

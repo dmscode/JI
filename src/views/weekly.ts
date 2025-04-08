@@ -108,26 +108,6 @@ export class WeeklyView {
         this.update();
     }
     /**
-     * 生成日期选择器的选项HTML
-     * @param option - 选项配置对象
-     * @param option.type - 选择器类型，可选值：'year' | 'week'
-     * @param option.value - 选项值
-     * @param option.title - 选项显示文本
-     * @param option.active - 是否为激活状态
-     * @returns 返回选项的HTML字符串
-     */
-    private getSelectorOption (option: {
-        type: 'year' | 'week',
-        value: string,
-        title: string,
-        active?: boolean,
-    }) {
-        // 返回带有类名、数据属性和激活状态的选项div元素
-        return `
-            <div class="${option.type}-option${option.active?' active':''}" data-value="${option.value}">${option.title}</div>
-        `
-    }
-    /**
      * 刷新日期选择器
      * 生成年份和周数选择器的HTML内容并更新到视图中
      */
@@ -136,32 +116,30 @@ export class WeeklyView {
         const startYear = new Date(this.plugin.settings.dailyStartDate).getFullYear();
         const endYear = new Date().getFullYear();
         
-        // 生成年份选择器的HTML代码
-        let yearSelectorsCode = ''
+        // 生成年份选择器
+        this.paper.els.outpaper!.empty();
         for (let year = startYear; year <= endYear; year++) {
-            yearSelectorsCode += this.getSelectorOption({
-                type: 'year',
-                value: year.toString(),
-                title: year.toString(),
-                active: +this.year === year
-            });
+            this.paper.els.outpaper!.createEl('div', {
+                cls: `year-option${+this.year === year?' active':''}`,
+                text: year.toString(),
+                attr: {
+                    'data-value': year.toString(),
+                }
+            })
         }
-
-        // 生成周数选择器的HTML代码
-        let weekSelectorsCode = ''
+        
+        // 生成周数选择器
+        this.paper.els.inpaper!.empty();
         for (let week = 1; week <= window.moment(this.year, 'YYYY').weeksInYear(); week++) {
             const weekStr = week.toString().padStart(2, '0');
-            weekSelectorsCode += this.getSelectorOption({
-                type: 'week',
-                value: weekStr,
-                title: weekStr,
-                active: +this.weekIndex === week
-            });
+            this.paper.els.inpaper!.createEl('div', {
+                cls: `week-option${+this.weekIndex === week?' active':''}`,
+                text: weekStr,
+                attr: {
+                    'data-value': weekStr,
+                }
+            })
         }
-
-        // 更新选择器内容到视图中
-        this.paper.els.outpaper!.innerHTML = yearSelectorsCode;
-        this.paper.els.inpaper!.innerHTML = weekSelectorsCode;
     }
     /**
      * 更新周视图的日期和内容
@@ -214,15 +192,26 @@ export class WeeklyView {
         const weeklyContainer = this.paper.els.weekly!;
         // 清空容器内容
         weeklyContainer.empty();
-        // 创建周报标题和内容的HTML结构
-        weeklyContainer.innerHTML = `<div class="ji-note-subtitle ji-weekly-title">
-                        <a href="${this.weeklyNotePath}" class="internal-link ji-weekly-link" target="_blank" rel="noopener">${this.year}Week${this.weekIndex}</a>
-                    </div>
-                    <div class="ji-note-content ji-weekly-content"></div>`;
+        // 创建周报标题容器
+        weeklyContainer.createEl('div', {
+            cls: 'ji-note-subtitle ji-weekly-title',
+        }).createEl('a', {
+            text: `${this.year}Week${this.weekIndex}`,
+            href: this.weeklyNotePath,
+            cls: 'internal-link ji-weekly-link',
+            attr: {
+                target: '_blank',
+                rel: 'noopener',
+            }
+        })
+        // 创建周报内容容器
+        const weeklyContentContainer = weeklyContainer.createEl('div', {
+            cls: 'ji-note-content ji-weekly-content',
+        })
         // 获取周报内容，如果不存在则显示默认文本
         const weeklySource = await this.getNoteSource(this.weeklyNotePath) || '（此周并无总结）';
         // 将Markdown内容渲染到周报容器中
-        await MarkdownRenderer.render(this.plugin.app, weeklySource, weeklyContainer.querySelector('.ji-weekly-content')!, "", this.plugin);
+        await MarkdownRenderer.render(this.plugin.app, weeklySource, weeklyContentContainer, "", this.plugin);
     }
     /**
      * 渲染每日笔记内容
@@ -252,18 +241,31 @@ export class WeeklyView {
                     thisDailyContent = dayNote[2]
                 }
             })
-
-            // 创建日记HTML结构
-            notesContainer.innerHTML += `
-                <div class="ji-daily-note">
-                    <div class="ji-note-subtitle ji-daily-title">
-                        <a href="${dailyNotePath}#${thisDailyTitle}" class="internal-link ji-daily-link" target="_blank" rel="noopener">${thisDailyTitle}</a>
-                    </div>
-                    <div class="ji-note-content ji-daily-content" data-title="${thisDailyTitle}" ${this.isFolding ? `style="line-clamp: ${this.plugin.settings.dailyContentLineCount}; -webkit-line-clamp: ${this.plugin.settings.dailyContentLineCount};"` : ''}></div>
-                </div>
-            `
+            const dailyNoteContainer = notesContainer.createEl('div', {
+                cls: 'ji-daily-note',
+            })
+            // 创建日记标题
+            dailyNoteContainer.createEl('div', {
+                cls: 'ji-note-subtitle ji-daily-title',
+            }).createEl('a', {
+                text: thisDailyTitle,
+                href: dailyNotePath,
+                cls: 'internal-link ji-daily-link',
+                attr: {
+                    target: '_blank',
+                    rel: 'noopener',
+                }
+            })
+            // 创建日记内容
+            const dailyNoteContentContainer =  dailyNoteContainer.createEl('div', {
+                cls: 'ji-note-content ji-daily-content',
+                attr: {
+                    'data-title': thisDailyTitle,
+                    'style': this.isFolding? `line-clamp: ${this.plugin.settings.dailyContentLineCount}; -webkit-line-clamp: ${this.plugin.settings.dailyContentLineCount};` : '',
+                },
+            })
             // 渲染Markdown内容
-            await MarkdownRenderer.render(this.plugin.app, thisDailyContent, this.container.querySelector(`.ji-daily-content[data-title="${thisDailyTitle}"]`)!, "", this.plugin);
+            await MarkdownRenderer.render(this.plugin.app, thisDailyContent, dailyNoteContentContainer, "", this.plugin);
         }
     }
 }

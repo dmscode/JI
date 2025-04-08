@@ -1,5 +1,3 @@
-import styles from "../styles/styles.less";
-
 /**
  * NotePager配置接口
  * @interface NotePagerConfig
@@ -21,16 +19,16 @@ export interface NotePagerConfig {
     }[]
 }
 
+
 /**
  * NotePager类 - 笔记页面管理器
  */
 export class NotePager {
     container: HTMLElement;
     config: NotePagerConfig;
-    root: DocumentFragment;
     els: {
         [key:string]: HTMLElement;
-    }
+    } = {};
     /**
      * @param {HTMLElement} container - 容器元素
      * @param {Object} config - 配置对象
@@ -49,104 +47,63 @@ export class NotePager {
                 }
             ],
         }, config as NotePagerConfig);
-        // 创建Shadow DOM
-        this.root = document.createDocumentFragment();
-        this.render();
-    }
-
-    /**
-     * 渲染组件
-     */
-    render () {
-        this.initializeLayout();
-        this.getEls();
-        this.setStyle();
-        this.container.empty();
-        this.container.appendChild(this.root);
-    }
-
-    /**
-     * 获取组件类名列表
-     * @returns {string} 合并后的类名字符串
-     */
-    private getClassNames() {
-        return ['ji-notepaper-view', ...this.config.clsName].join(' ');
-    }
-
-    /**
-     * 生成工具栏HTML
-     * @param {any[]|undefined} tools - 工具配置数组
-     * @returns {string} 工具栏HTML字符串
-     */
-    private getToolsHtml(tools: any[]|undefined) {
-        if (!tools) return '';
-        return tools.map(tool => `<div class="${tool.class}">${tool.title}</div>`).join('\n');
-    }
-
-    /**
-     * 获取工具栏DOM元素
-     * @param {any[]} tools - 工具配置数组
-     */
-    private getToolsEl(tools: any[]) {
-        tools.forEach(tool => {
-            this.els[tool.name] = this.root.querySelector(`.${tool.class}`) as HTMLElement;
-        });
+        this.init();
     }
 
     /**
      * 初始化页面布局
      */
-    initializeLayout() {
-        const template = `
-        <style class='ji-notepaper-style'></style>
-        <div class="${this.getClassNames()}" data-element-mark="dms-ji-plugin">
-            <div class="ji-notepaper-main">
-                <div class="ji-notepaper-left">
-                    <div class="ji-notepaper-top-tools">
-                        ${this.getToolsHtml(this.config.topTools)}
-                    </div>
-                    <div class="ji-notepaper-content"></div>
-                    <div class="ji-notepaper-bottom-tools">
-                        ${this.getToolsHtml(this.config.bottomTools)}
-                    </div>
-                </div>
-                <div class="ji-notepaper-inpaper-selectors"></div>
-            </div>
-            <div class="ji-notepaper-outpaper-selectors"></div>
-        </div>
-        `;
-        const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = template;
-        while (tempDiv.firstChild) {
-            this.root.appendChild(tempDiv.firstChild);
+    private init() {
+        // 创建根元素
+        this.els.view = document.createElement('div');
+        this.els.view.classList.add('ji-notepaper-view', ...this.config.clsName);
+        this.els.view.setAttribute('data-element-mark', 'dms-ji-plugin');
+            // 创建主要内容区域
+            this.els.main = this.els.view.createEl('div', { cls: 'ji-notepaper-main' });
+                // 创建左侧区域
+                this.els.left = this.els.main.createEl('div', { cls: 'ji-notepaper-left' });
+                    // 创建顶部工具栏区域
+                    this.els.topTools = this.els.left.createEl('div', { cls: 'ji-notepaper-top-tools' });
+                    // 创建内容区域
+                    this.els.content = this.els.left.createEl('div', { cls: 'ji-notepaper-content' });
+                    // 创建底部工具栏区域
+                    this.els.bottomTools = this.els.left.createEl('div', { cls: 'ji-notepaper-bottom-tools' });
+                // 创建内部选择器区域
+                this.els.inpaper = this.els.main.createEl('div', { cls: 'ji-notepaper-inpaper-selectors' });
+                // 创建外部选择器区域
+            this.els.outpaper = this.els.view.createEl('div', { cls: 'ji-notepaper-outpaper-selectors' });
+        // 创建工具按钮
+        this.initTools();
+        // 将根元素插入容器
+        this.container.empty();
+        this.container.appendChild(this.els.view);
+    }
+    /**
+     * 初始化顶部和底部工具栏
+     * @private
+     */
+    private initTools () {
+        // 如果存在顶部工具配置且不为空，则创建顶部工具栏
+        if (this.config.topTools && this.config.topTools.length) {
+            this.createTools(this.config.topTools, 'top');
+        }
+        // 如果存在底部工具配置且不为空，则创建底部工具栏
+        if (this.config.bottomTools && this.config.bottomTools.length) {
+            this.createTools(this.config.bottomTools, 'bottom'); 
         }
     }
-
     /**
-     * 获取并存储所有DOM元素引用
+     * 创建工具栏元素
+     * @param {any[]} tools - 工具配置数组
+     * @param {'top'|'bottom'} type - 工具栏位置类型
+     * @private
      */
-    getEls() {
-        // 获取主要DOM元素
-        this.els = {
-            style: this.root.querySelector(".ji-notepaper-style") as HTMLStyleElement,
-            view: this.root.querySelector(".ji-notepaper-view") as HTMLElement,
-            main: this.root.querySelector(".ji-notepaper-main") as HTMLElement,
-            left: this.root.querySelector(".ji-notepaper-left") as HTMLElement,
-            inpaper: this.root.querySelector(".ji-notepaper-inpaper-selectors") as HTMLElement,
-            outpaper: this.root.querySelector(".ji-notepaper-outpaper-selectors") as HTMLElement,
-            topTools: this.root.querySelector(".ji-notepaper-top-tools") as HTMLElement,
-            content: this.root.querySelector(".ji-notepaper-content") as HTMLElement,
-            bottomTools: this.root.querySelector(".ji-notepaper-bottom-tools") as HTMLElement,
-        }
-        // 获取工具栏元素
-        if(this.config.topTools) this.getToolsEl(this.config.topTools);
-        if(this.config.bottomTools) this.getToolsEl(this.config.bottomTools);
-    }
-
-    /**
-     * 设置组件样式
-     */
-    setStyle () {
-        this.els.style.textContent = styles;
+    private createTools (tools: any[], type: 'top'|'bottom') {
+        // 根据类型选择对应的工具栏容器
+        const toolsContainer = type === 'top' ? this.els.topTools : this.els.bottomTools;
+        // 遍历工具配置数组，为每个工具创建DOM元素并存储引用
+        tools.forEach(tool => {
+            this.els[tool.name] = toolsContainer.createEl('div', { cls: tool.class, text: tool.title });
+        });
     }
 }
