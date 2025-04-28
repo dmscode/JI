@@ -218,7 +218,7 @@ export class DailyView {
                 cls: 'ji-note-subtitle ji-daily-title',
             })
             dailyTitleContainer.createEl('a', {
-                cls: 'ji-daily-link',
+                cls: 'internal-link ji-daily-link',
                 text: title,
                 href: `${this.notePath}#${title}`,
                 attr: {
