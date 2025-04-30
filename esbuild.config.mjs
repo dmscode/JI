@@ -62,13 +62,12 @@ const context = await esbuild.context({
 });
 
 /** 同步到 Obsidian 中 */
-const sync = () => {
-	const target = 'F:/Obsidian/.obsidian/plugins/obsidian-ji'
-	const fileList = [
-		'dist/main.js',
-		'dist/styles.css',
-		'manifest.json',
-	]
+const fileList = [
+	'dist/main.js',
+	'dist/styles.css',
+	'manifest.json',
+]
+const sync = (target) => {
   /** 如果目标文件夹不存在 */
   if (!fs.existsSync(target)) {
     console.log('同步目标文件夹不存在')
@@ -87,9 +86,10 @@ const sync = () => {
 
 if (prod) {
 	await context.rebuild();
-	sync();
 	process.exit(0);
 } else {
-	await context.watch();
-	sync();
+	// await context.watch();
+	await context.rebuild();
+	sync('F:/Obsidian/.obsidian/plugins/obsidian-ji');
+	process.exit(0);
 }

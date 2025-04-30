@@ -169,7 +169,7 @@ export class DailyView {
     private getWeekNoteCode (dateStr: string|undefined, container: HTMLElement) {
         const dateMoment = dateStr && window.moment(dateStr, 'YYYY-MM-DD');
         const weekNotePath = dateStr && this.plugin.settings.weekNotePath.replace(/\$\{\{(.*?)\}\}/g, (m, s)=> dateMoment!.format(s));
-        const hasWeekNote = weekNotePath && this.plugin.app.vault.getAbstractFileByPath(weekNotePath);
+        const hasWeekNote = weekNotePath && this.plugin.app.vault.getFileByPath(weekNotePath);
         const weekTitle = dateMoment ? `${dateMoment!.format('YYYY')} Week ${dateMoment!.format('ww')}` : '';
         if(hasWeekNote) {
             container.createEl('a', {
@@ -237,7 +237,7 @@ export class DailyView {
                 } 
             })
             // 渲染Markdown内容
-            await MarkdownRenderer.render(this.plugin.app, content, dailyContentContainer, "", this.plugin);
+            await MarkdownRenderer.render(this.plugin.app, content, dailyContentContainer, this.notePath, this.plugin);
         })
     }
 }

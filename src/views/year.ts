@@ -1,7 +1,6 @@
 import { MarkdownPostProcessorContext, setTooltip } from "obsidian";
 import JIPlugin from "../main";
 import type { Moment } from 'moment';
-import calendar from "../utils/js-calendar-converter.mjs"
 import { NotePagerConfig, NotePager } from "../utils/notepaper";
 
 export class YearView {
@@ -138,36 +137,8 @@ export class YearView {
         if (thisDay.format('YYYY-MM-DD') === this.today.format('YYYY-MM-DD')) dayClasses.push("ji-year-day-active");
         /** 过去 */
         if (this.today.diff(thisDay, 'days') > 0) dayClasses.push("ji-year-day-passed");
-        /** 日期信息
-         * {
-         *   Animal: "龙",
-         *   IDayCn: "廿一",
-         *   IMonthCn: "冬月",
-         *   Term: "冬至",
-         *   astro: "射手座",
-         *   cDay: 21,
-         *   cMonth: 12,
-         *   cYear: 2024,
-         *   date: "2024-12-21",
-         *   festival: null,
-         *   gzDay: "己未",
-         *   gzMonth: "丙子",
-         *   gzYear: "甲辰",
-         *   isLeap: false,
-         *   isTerm: true,
-         *   isToday: false,
-         *   lDay: 21,
-         *   lMonth: 11,
-         *   lYear: 2024,
-         *   lunarDate: "2024-11-21",
-         *   lunarFestival: null,
-         *   nWeek: 6,
-         *   ncWeek: "星期六",
-         * }
-        */
-        // 获取农历信息并生成日期信息代码
-        const dayInfo = calendar.solar2lunar(this.year, month, thisDate);
-        const dayInfoCode = `${month}-${thisDate} ` + (dayInfo!==-1 ? `${dayInfo.festival ? `${dayInfo.festival} ` : ''}${dayInfo.IMonthCn}${dayInfo.IDayCn}${dayInfo.lunarFestival ? ` ${dayInfo.lunarFestival}` : ''}${dayInfo.Term ? ` ${dayInfo.Term}` : ''}` : '') + ` 第${thisDay.week().toString()}周`
+        // 生成日期信息代码
+        const dayInfoCode = `${month}-${thisDate} 第${thisDay.week().toString()}周 ${thisDay.format("dddd")}`;
 
         // 创建日期单元格
         const thisDayContent = this.weekContainer.createEl("div", {
@@ -179,32 +150,15 @@ export class YearView {
                 "data-day-info": dayInfoCode,
             },
         });
-        const marks =thisDayContent.createEl("div", { cls: "ji-year-day-marks" });
+        const marks = thisDayContent.createEl("div", { cls: "ji-year-day-marks" });
         /** 是月初 */
-        if(thisDay.date()===1) marks.createEl("div", { cls: "ji-year-day-mark ji-year-day-monthStart" });
-        /** 是农历月初 */
-        if(dayInfo !== -1 && dayInfo.lDay === 1) marks.createEl("div", { cls: "ji-year-day-mark ji-year-day-cMonthStart" });
+        if(thisDay.date() === 1) marks.createEl("div", { cls: "ji-year-day-mark ji-year-day-monthStart" });
         /** 是周一 */
-        // if(!thisDay.day()) marks.createEl("div", { cls: "ji-year-day-mark ji-year-day-weekStart" });
-        /** 是节气 */
-        if(dayInfo !== -1 && dayInfo.isTerm) marks.createEl("div", { cls: "ji-year-day-mark ji-year-day-term" });
-        /** 是公历节日 */
-        if(dayInfo !== -1 && dayInfo.festival) marks.createEl("div", { cls: "ji-year-day-mark ji-year-day-festival" });
-        /** 是农历节日 */
-        if(dayInfo !== -1 && dayInfo.lunarFestival) marks.createEl("div", { cls: "ji-year-day-mark ji-year-day-lunarFestival" });
+        if(thisDay.day() === 1) marks.createEl("div", { cls: "ji-year-day-mark ji-year-day-weekStart" });
 
         // 设置工具提示
-        const Tooltip =
-            `${thisDay.format("YYYY-MM-DD")}\n第 ${thisDay.week().toString()} 周 ${thisDay.format("dddd")}` +
-            (dayInfo !== -1
-                ? `\n${dayInfo.IMonthCn} ${dayInfo.IDayCn}${
-                        dayInfo.Term ? `\n${dayInfo.Term}` : ""
-                    }${
-                        dayInfo.festival ? `\n${dayInfo.festival}` : ""
-                    }${
-                        dayInfo.lunarFestival ? `\n${dayInfo.lunarFestival}` : ""
-                    }`
-                : "");
+        const Tooltip = `${thisDay.format("YYYY-MM-DD")}\n第 ${thisDay.week().toString()} 周 ${thisDay.format("dddd")}`;
+        setTooltip(thisDayContent, Tooltip);
         setTooltip(thisDayContent, Tooltip);
     }
 }

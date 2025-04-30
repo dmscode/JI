@@ -463,11 +463,6 @@ is-what@^3.14.1:
   resolved "https://registry.yarnpkg.com/is-what/-/is-what-3.14.1.tgz#e1222f46ddda85dead0fd1c9df131760e77755c1"
   integrity sha512-sNxgpk9793nzSs7bA6JQJGeIuRBQhAaNGG77kzYQgMkrID+lS6SlK07K5LaptscDlSaIgH+GPFzf+d75FVxozA==
 
-js-calendar-converter@^0.0.6:
-  version "0.0.6"
-  resolved "https://registry.yarnpkg.com/js-calendar-converter/-/js-calendar-converter-0.0.6.tgz#954405b83bb3567dc2d1d8f909af86bf22cb7269"
-  integrity sha512-0TRHm2jaGRAbXd1sKvzHSW3hB+oqo2h6EAHMAPpuEj0WYic+KWgsA+41PnNx03ggyGTAHx29diDqFxqHFctAGg==
-
 less@^4.2.1:
   version "4.2.1"
   resolved "https://registry.yarnpkg.com/less/-/less-4.2.1.tgz#fe4c9848525ab44614c0cf2c00abd8d031bb619a"

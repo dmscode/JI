@@ -211,7 +211,7 @@ export class WeeklyView {
         // 获取周报内容，如果不存在则显示默认文本
         const weeklySource = await this.getNoteSource(this.weeklyNotePath) || '（此周并无总结）';
         // 将Markdown内容渲染到周报容器中
-        await MarkdownRenderer.render(this.plugin.app, weeklySource, weeklyContentContainer, "", this.plugin);
+        await MarkdownRenderer.render(this.plugin.app, weeklySource, weeklyContentContainer, this.weeklyNotePath, this.plugin);
     }
     /**
      * 渲染每日笔记内容
@@ -265,7 +265,7 @@ export class WeeklyView {
                 },
             })
             // 渲染Markdown内容
-            await MarkdownRenderer.render(this.plugin.app, thisDailyContent, dailyNoteContentContainer, "", this.plugin);
+            await MarkdownRenderer.render(this.plugin.app, thisDailyContent, dailyNoteContentContainer, dailyNotePath, this.plugin);
         }
     }
 }

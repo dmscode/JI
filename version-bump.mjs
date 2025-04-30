@@ -2,7 +2,14 @@
 import { readFileSync, writeFileSync } from "fs";
 
 // 从环境变量获取目标版本号
-const targetVersion = process.env.npm_package_version;
+let targetVersion = process.env.npm_package_version;
+console.log("targetVersion", targetVersion);
+if (!targetVersion) {
+    // 从 package.json 读取版本号
+    const packageJson = JSON.parse(readFileSync("package.json", "utf8"));
+    targetVersion = packageJson.version;
+}
+console.log("targetVersion", targetVersion);
 
 // 更新 manifest.json 文件
 let manifest = JSON.parse(readFileSync("manifest.json", "utf8")); // 读取并解析 manifest.json
