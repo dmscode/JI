@@ -139,7 +139,7 @@ export class JISettingTab extends PluginSettingTab {
 
         new Setting(containerEl)
             .setHeading()
-            .setName('日记设置');
+            .setName('日记');
 
         this.createMomentSetting({
             key: 'dailyNotePath',
@@ -168,7 +168,7 @@ export class JISettingTab extends PluginSettingTab {
 
         new Setting(containerEl)
             .setHeading()
-            .setName('周记设置');
+            .setName('周记');
 
             this.createMomentSetting({
                 key: 'weekNotePath',

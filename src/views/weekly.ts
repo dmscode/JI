@@ -1,4 +1,4 @@
-import { App, MarkdownPostProcessorContext, MarkdownRenderer } from "obsidian";
+import { App, MarkdownPostProcessorContext, MarkdownRenderer, MarkdownRenderChild, Component } from "obsidian";
 import JIPlugin from "../main";
 import type { Moment } from 'moment';
 import { NotePagerConfig, NotePager } from "../utils/notepaper";
@@ -19,9 +19,12 @@ export class WeeklyView {
     weekStartDate: Moment;
     // 是否为周记视图
     isWeeklyView: boolean = false;
+    // 生命周期组件
+    processorLife: Component;
     constructor(el: HTMLElement, plugin: JIPlugin) {
         this.container = el;
         this.plugin = plugin;
+        this.processorLife = new MarkdownRenderChild(this.container);
         el.empty();
         // 初始化视图结构
         this.initPaper();
@@ -211,7 +214,7 @@ export class WeeklyView {
         // 获取周报内容，如果不存在则显示默认文本
         const weeklySource = await this.getNoteSource(this.weeklyNotePath) || '（此周并无总结）';
         // 将Markdown内容渲染到周报容器中
-        await MarkdownRenderer.render(this.plugin.app, weeklySource, weeklyContentContainer, this.weeklyNotePath, this.plugin);
+        await MarkdownRenderer.render(this.plugin.app, weeklySource, weeklyContentContainer, this.weeklyNotePath, this.processorLife);
     }
     /**
      * 渲染每日笔记内容
@@ -265,7 +268,7 @@ export class WeeklyView {
                 },
             })
             // 渲染Markdown内容
-            await MarkdownRenderer.render(this.plugin.app, thisDailyContent, dailyNoteContentContainer, dailyNotePath, this.plugin);
+            await MarkdownRenderer.render(this.plugin.app, thisDailyContent, dailyNoteContentContainer, dailyNotePath, this.processorLife);
         }
     }
 }

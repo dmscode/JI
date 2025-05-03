@@ -1,4 +1,4 @@
-import { Plugin, parseYaml } from 'obsidian';
+import { Plugin, parseYaml, Component } from 'obsidian';
 import { JISettingTab, JIPluginSettings, DEFAULT_SETTINGS } from './settings';
 import { showError } from './utils/showError';
 import { DailyView } from './views/daily';

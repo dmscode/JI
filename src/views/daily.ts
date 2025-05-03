@@ -1,4 +1,4 @@
-import { MarkdownRenderer } from "obsidian";
+import { MarkdownRenderer, MarkdownRenderChild, Component } from "obsidian";
 import JIPlugin from "../main";
 import { NotePagerConfig, NotePager } from "../utils/notepaper";
 
@@ -17,7 +17,8 @@ export class DailyView {
     noteSource: string;
     // 是否折叠内容
     isFolding: boolean = true;
-
+    // 生命周期组件
+    processorLife: Component;
     /**
      * 构造函数：初始化日记视图
      * @param el - 容器元素
@@ -26,6 +27,7 @@ export class DailyView {
     constructor(el: HTMLElement, plugin: JIPlugin, conf: any) {
         this.container = el;
         this.plugin = plugin;
+        this.processorLife = new MarkdownRenderChild(this.container);
         el.empty();
         // 初始化视图结构
         this.initPaper();
@@ -234,10 +236,10 @@ export class DailyView {
                 attr: {
                     'data-title': title,
                     'style': this.isFolding? `line-clamp: ${this.plugin.settings.dailyContentLineCount}; -webkit-line-clamp: ${this.plugin.settings.dailyContentLineCount};` : ''
-                } 
+                }
             })
             // 渲染Markdown内容
-            await MarkdownRenderer.render(this.plugin.app, content, dailyContentContainer, this.notePath, this.plugin);
+            await MarkdownRenderer.render(this.plugin.app, content, dailyContentContainer, this.notePath, this.processorLife);
         })
     }
 }
